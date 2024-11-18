@@ -2,7 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const exec = require('child_process').exec;
 const util = require('util');
 
-const bot = new TelegramBot('7021668071:AAGMNg65XaJ5BG1BLIoY91IqQIhxCCEPkPc', { polling: true });
+const bot = new TelegramBot('7618071329:AAGUW39cj_qzihRP3XOwRqWw0cZ_X7upY8o', { polling: true });
 const ownerChatId = '6434916607';
 
 const commandUsageList = [];
